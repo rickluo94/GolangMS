@@ -1,6 +1,15 @@
-basePath: /api/v1
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: 94petban@petban.net
+    name: API Support
+  description: This is PetBan Test server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://petban.net
+  title: PetBan Manage API
+  version: "1.0"
 paths:
   /user/create:
     post:
@@ -28,4 +37,34 @@ paths:
           schema:
             type: string
       summary: create user
+      tags:
+      - User
+  /user/update:
+    post:
+      parameters:
+      - description: username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: nickname
+        in: formData
+        name: nickname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: update user
+      tags:
+      - User
 swagger: "2.0"
