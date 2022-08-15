@@ -11,6 +11,42 @@ info:
   title: PetBan Manage API
   version: "1.0"
 paths:
+  /user/{id}:
+    delete:
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: delete user
+      tags:
+      - User
+  /user/{username}:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: get user
+      tags:
+      - User
   /user/create:
     post:
       parameters:

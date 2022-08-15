@@ -14,6 +14,9 @@
 package main
 
 import (
+	_ "awesomeProject/docs"
+	"awesomeProject/ent"
+	"awesomeProject/ent/user"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -22,10 +25,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	"net/http"
-
-	_ "awesomeProject/docs"
-	"awesomeProject/ent"
-	"awesomeProject/ent/user"
+	"strconv"
 )
 
 type Server struct {
@@ -133,6 +133,41 @@ func handleCreateUser(c *gin.Context) {
 	ResponseJSON(c, http.StatusOK, 200, "", resp)
 }
 
+// @Summary get user
+// @Tags User
+// @Produce application/json
+// @Param username path string true "username"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /user/{username} [get]
+func handleGetUser(c *gin.Context) {
+	userName := c.Param("username")
+	if len(userName) == 0 {
+		ResponseJSON(c, 200, 400, "invalid param", nil)
+		return
+	}
+
+	usr, _ := sr.db.User.
+		Query().
+		Where(user.Username(userName)).
+		First(context.Background())
+	if usr == nil {
+		ResponseJSON(c, http.StatusOK, 500, "user doesn't exist", nil)
+		return
+	}
+
+	type ResponseData struct {
+		UserID   uint64 `json:"userid"`
+		UserName string `json:"username"`
+		Nickname string `json:"nickname"`
+	}
+	var resp ResponseData
+	resp.Nickname = usr.Nickname
+	resp.UserName = usr.Username
+	resp.UserID = uint64(usr.ID)
+
+	ResponseJSON(c, http.StatusOK, 200, "", resp)
+}
+
 // @Summary update user
 // @Tags User
 // @Produce application/json
@@ -191,6 +226,36 @@ func handleUpdateUser(c *gin.Context) {
 	ResponseJSON(c, http.StatusOK, 200, "", resp)
 }
 
+// @Summary delete user
+// @Tags User
+// @Produce application/json
+// @Param id formData int true "id"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /user/{id} [delete]
+func handleDeleteUser(c *gin.Context) {
+	id := c.Param("id")
+
+	if len(id) == 0 {
+		ResponseJSON(c, 200, 400, "invalid param", nil)
+		return
+	}
+
+	intID, _ := strconv.ParseInt(id, 10, 64)
+	if intID < 0 {
+		ResponseJSON(c, 200, 500, "delete user failed", nil)
+		return
+	}
+
+	_, err := sr.db.User.
+		Delete().Where(user.ID(uint64(intID))).Exec(context.Background())
+	if err != nil {
+		ResponseJSON(c, 200, 500, "delete user failed", nil)
+		return
+	}
+
+	ResponseJSON(c, 200, 200, "delete user ok", nil)
+}
+
 func runHttpServer() {
 	r := gin.New()
 
@@ -202,14 +267,16 @@ func runHttpServer() {
 
 	// web api document http://localhost:8080/swagger/index.html
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
-		ginSwagger.URL("http://localhost:8080/swagger/doc.json"),
-		ginSwagger.DefaultModelsExpandDepth(-1)))
+		ginSwagger.URL("http://localhost:8080/swagger/doc.json")))
 
 	// Create
 	r.POST("/user/create", handleCreateUser)
-
+	// Read
+	r.GET("/user/:username", handleGetUser)
 	// Update
 	r.POST("/user/update", handleUpdateUser)
+	// Delete
+	r.DELETE("/user/:id", handleDeleteUser)
 
 	// Listen and serve on 0.0.0.0:8080
 	_ = r.Run(":8080")
