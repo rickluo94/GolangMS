@@ -17,15 +17,23 @@ import (
 	_ "awesomeProject/docs"
 	"awesomeProject/ent"
 	"awesomeProject/ent/user"
+	"bytes"
 	"context"
+	"fmt"
+	"github.com/dchest/captcha"
+	_ "github.com/dchest/captcha"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type Server struct {
@@ -85,6 +93,106 @@ func BindAndValid(c *gin.Context, form interface{}) (int, int) {
 	//}
 
 	return http.StatusOK, 200
+}
+
+func Serve(w http.ResponseWriter, r *http.Request, id, ext, lang string, download bool, width, height int) error {
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
+	var content bytes.Buffer
+	switch ext {
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+		captcha.WriteImage(&content, id, width, height)
+	case ".wav":
+		w.Header().Set("Content-Type", "audio/x-wav")
+		captcha.WriteAudio(&content, id, lang)
+	default:
+		return captcha.ErrNotFound
+	}
+
+	if download {
+		w.Header().Set("Content-Type", "application/octet-stream")
+	}
+	http.ServeContent(w, r, id+ext, time.Time{}, bytes.NewReader(content.Bytes()))
+	return nil
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dir, file := path.Split(r.URL.Path)
+	ext := path.Ext(file)
+	id := file[:len(file)-len(ext)]
+	fmt.Println("file : " + file)
+	fmt.Println("ext : " + ext)
+	fmt.Println("id : " + id)
+	if ext == "" || id == "" {
+		http.NotFound(w, r)
+		return
+	}
+	fmt.Println("reload : " + r.FormValue("reload"))
+	if r.FormValue("reload") != "" {
+		captcha.Reload(id)
+	}
+	lang := strings.ToLower(r.FormValue("lang"))
+	download := path.Base(dir) == "download"
+	if Serve(w, r, id, ext, lang, download, captcha.StdWidth, captcha.StdHeight) == captcha.ErrNotFound {
+		http.NotFound(w, r)
+	}
+}
+
+func handleGetCaptcha(c *gin.Context) {
+	type CaptchaResponse struct {
+		CaptchaId string `json:"captchaId"`
+		ImageUrl  string `json:"imageUrl"`
+	}
+	var resp CaptchaResponse
+
+	d := struct {
+		CaptchaId string
+	}{
+		captcha.New(),
+	}
+	if d.CaptchaId != "" {
+		resp.CaptchaId = d.CaptchaId
+		resp.ImageUrl = "/show/" + d.CaptchaId + ".png"
+		ResponseJSON(c, http.StatusOK, 200, "create CaptchaID", resp)
+	} else {
+		ResponseJSON(c, http.StatusOK, 500, "create CaptchaID failed:", nil)
+	}
+}
+
+func handleGetCaptchaPng(c *gin.Context) {
+	source := c.Param("source")
+	logrus.Info("GetCaptchaPng : " + source)
+	ServeHTTP(c.Writer, c.Request)
+}
+
+func handleGetVerifyCaptcha(c *gin.Context) {
+	type GetParam struct {
+		captchaId string `form:"captchaId" json:"captchaId"`
+		value     string `form:"value" json:"value"`
+	}
+	var form GetParam
+
+	httpCode, errCode := BindAndValid(c, &form)
+	if errCode != 200 {
+		ResponseJSON(c, httpCode, errCode, "invalid param", nil)
+		return
+	}
+
+	form.captchaId = c.Request.FormValue("captchaId")
+	form.value = c.Request.FormValue("value")
+
+	if form.captchaId == "" || form.value == "" {
+		ResponseJSON(c, http.StatusOK, 500, "captchaId or value cant be empty", nil)
+	} else {
+		if captcha.VerifyString(form.captchaId, form.value) {
+			ResponseJSON(c, http.StatusOK, 200, "驗證成功", nil)
+		} else {
+			ResponseJSON(c, http.StatusOK, 200, "驗證失敗", nil)
+		}
+	}
 }
 
 // @Summary create user
@@ -268,7 +376,10 @@ func runHttpServer() {
 	// web api document http://localhost:8080/swagger/index.html
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
 		ginSwagger.URL("http://localhost:8080/swagger/doc.json")))
-
+	//Captcha
+	r.GET("/captcha/create", handleGetCaptcha)
+	r.GET("/captcha/show/:source", handleGetCaptchaPng)
+	r.GET("/captcha/verify", handleGetVerifyCaptcha)
 	// Create
 	r.POST("/user/create", handleCreateUser)
 	// Read
