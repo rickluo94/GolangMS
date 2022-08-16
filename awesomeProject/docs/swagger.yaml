@@ -11,6 +11,59 @@ info:
   title: PetBan Manage API
   version: "1.0"
 paths:
+  /captcha/create:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: Get Captcha
+      tags:
+      - Captcha
+  /captcha/show/{imageUrl}:
+    get:
+      parameters:
+      - description: imageUrl
+        in: path
+        name: imageUrl
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: Get Captcha Png
+      tags:
+      - Captcha
+  /captcha/verify:
+    get:
+      parameters:
+      - description: captchaId
+        in: query
+        name: captchaId
+        required: true
+        type: string
+      - description: value
+        in: query
+        name: value
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: Verify Captcha
+      tags:
+      - Captcha
   /user/{id}:
     delete:
       parameters:

@@ -24,6 +24,88 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/captcha/create": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Captcha"
+                ],
+                "summary": "Get Captcha",
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":200,\"data\":{},\"msg\":\"ok\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/captcha/show/{imageUrl}": {
+            "get": {
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "Captcha"
+                ],
+                "summary": "Get Captcha Png",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "imageUrl",
+                        "name": "imageUrl",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":200,\"data\":{},\"msg\":\"ok\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/captcha/verify": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Captcha"
+                ],
+                "summary": "Verify Captcha",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "captchaId",
+                        "name": "captchaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "value",
+                        "name": "value",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":200,\"data\":{},\"msg\":\"ok\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/create": {
             "post": {
                 "produces": [

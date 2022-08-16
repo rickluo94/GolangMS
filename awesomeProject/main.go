@@ -141,6 +141,11 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary Get Captcha
+// @Tags Captcha
+// @Produce application/json
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /captcha/create [get]
 func handleGetCaptcha(c *gin.Context) {
 	type CaptchaResponse struct {
 		CaptchaId string `json:"captchaId"`
@@ -162,27 +167,40 @@ func handleGetCaptcha(c *gin.Context) {
 	}
 }
 
+// @Summary Get Captcha Png
+// @Tags Captcha
+// @Produce image/png
+// @Param imageUrl path string true "imageUrl"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /captcha/show/{imageUrl} [get]
 func handleGetCaptchaPng(c *gin.Context) {
-	source := c.Param("source")
-	logrus.Info("GetCaptchaPng : " + source)
+	imageUrl := c.Param("imageUrl")
+	logrus.Info("GetCaptchaPng : " + imageUrl)
 	ServeHTTP(c.Writer, c.Request)
 }
 
+// @Summary Verify Captcha
+// @Tags Captcha
+// @Produce application/json
+// @Param captchaId query string true "captchaId"
+// @Param value query string true "value"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /captcha/verify [get]
 func handleGetVerifyCaptcha(c *gin.Context) {
-	type GetParam struct {
+	type GetQuery struct {
 		captchaId string `form:"captchaId" json:"captchaId"`
 		value     string `form:"value" json:"value"`
 	}
-	var form GetParam
+	var form GetQuery
+
+	form.captchaId = c.Query("captchaId")
+	form.value = c.Query("value")
 
 	httpCode, errCode := BindAndValid(c, &form)
 	if errCode != 200 {
 		ResponseJSON(c, httpCode, errCode, "invalid param", nil)
 		return
 	}
-
-	form.captchaId = c.Request.FormValue("captchaId")
-	form.value = c.Request.FormValue("value")
 
 	if form.captchaId == "" || form.value == "" {
 		ResponseJSON(c, http.StatusOK, 500, "captchaId or value cant be empty", nil)
@@ -378,7 +396,7 @@ func runHttpServer() {
 		ginSwagger.URL("http://localhost:8080/swagger/doc.json")))
 	//Captcha
 	r.GET("/captcha/create", handleGetCaptcha)
-	r.GET("/captcha/show/:source", handleGetCaptchaPng)
+	r.GET("/captcha/show/:imageUrl", handleGetCaptchaPng)
 	r.GET("/captcha/verify", handleGetVerifyCaptcha)
 	// Create
 	r.POST("/user/create", handleCreateUser)

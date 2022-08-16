@@ -22,10 +22,6 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dchest/captcha v1.0.0 h1:vw+bm/qMFvTgcjQlYVTuQBJkarm5R0YSsDKhm1HZI2o=
 github.com/dchest/captcha v1.0.0/go.mod h1:7zoElIawLp7GUMLcj54K9kbw+jEyvz2K0FDdRRYhvWo=
-github.com/en-vee/aconf v0.0.0-20190302084711-a3ed365b7cff h1:Q/FSzb34kHK2uLnGkxalw/YutFuY8/d+iSRZnTcJwyU=
-github.com/en-vee/aconf v0.0.0-20190302084711-a3ed365b7cff/go.mod h1:rJ0QnmuXDC2jabOcCX/C6Udf758DRMYT01XCDl0UHJ8=
-github.com/en-vee/alog v0.0.0-20190922070830-98e6a77f6e73 h1:nqljehHGjGCwcnM6gBNnvnZEzW0BDT2oyal4vJGUOIo=
-github.com/en-vee/alog v0.0.0-20190922070830-98e6a77f6e73/go.mod h1:eRITUrKt/rznD1RkIgawvk1qYdpHjYK0l8Bq7bQRRvk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gin-contrib/gzip v0.0.6 h1:NjcunTcGAj5CO1gn4N8jHOSIeRFHIbn51z6K+xaN4d4=
 github.com/gin-contrib/gzip v0.0.6/go.mod h1:QOJlmV2xmayAjkNS2Y8NQsMneuRShOU/kjovCXNuzzk=
