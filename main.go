@@ -45,7 +45,7 @@ type Server struct {
 var sr Server
 
 func initDatabase() {
-	client, err := ent.Open("mysql", "root:1qazXSW@@tcp(localhost:3306)/cms?parseTime=True")
+	client, err := ent.Open("mysql", "root:1qazXSW@@tcp(127.0.0.1:3306)/GolangDev?parseTime=True")
 
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
@@ -435,18 +435,18 @@ func handleGetCity(c *gin.Context) {
 // @Summary create city
 // @Tags City
 // @Produce application/json
-// @Param Name path string true "Name"
-// @Param CountryCode path string true "CountryCode"
-// @Param District path string true "District"
-// @Param Population path int true "Population"
+// @Param name formData string true "name"
+// @Param countrycode formData string true "countrycode"
+// @Param district formData string true "district"
+// @Param population formData int true "population"
 // @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
-// @Router /city/create [POST]
+// @Router /city/create [post]
 func handleCreateCity(c *gin.Context) {
 	type PostParam struct {
-		Name        string `form:"Name" json:"Name"`
-		CountryCode string `form:"CountryCode" json:"CountryCode"`
-		District    string `form:"District" json:"District"`
-		Population  int    `form:"Population" json:"Population"`
+		Name        string `form:"name" json:"name"`
+		CountryCode string `form:"countrycode" json:"countrycode"`
+		District    string `form:"district" json:"district"`
+		Population  int    `form:"population" json:"population"`
 	}
 
 	var form PostParam
