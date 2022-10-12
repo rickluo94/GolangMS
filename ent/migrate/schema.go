@@ -9,6 +9,20 @@ import (
 )
 
 var (
+	// CitiesColumns holds the columns for the "cities" table.
+	CitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Nullable: true, Size: 35},
+		{Name: "country_code", Type: field.TypeString, Nullable: true, Size: 3},
+		{Name: "district", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "population", Type: field.TypeInt, Nullable: true},
+	}
+	// CitiesTable holds the schema information for the "cities" table.
+	CitiesTable = &schema.Table{
+		Name:       "cities",
+		Columns:    CitiesColumns,
+		PrimaryKey: []*schema.Column{CitiesColumns[0]},
+	}
 	// UserColumns holds the columns for the "user" table.
 	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -36,6 +50,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CitiesTable,
 		UserTable,
 	}
 )

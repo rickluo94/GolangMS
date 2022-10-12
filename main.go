@@ -16,6 +16,7 @@ package main
 import (
 	_ "awesomeProject/docs"
 	"awesomeProject/ent"
+	"awesomeProject/ent/city"
 	"awesomeProject/ent/user"
 	"bytes"
 	"context"
@@ -44,7 +45,7 @@ type Server struct {
 var sr Server
 
 func initDatabase() {
-	client, err := ent.Open("mysql", "nwhuualh_sa:dak@bnj3AFJ_zvj_bqx@tcp(144.48.143.151:3306)/nwhuualh_pbm?parseTime=True")
+	client, err := ent.Open("mysql", "root:1qazXSW@@tcp(localhost:3306)/cms?parseTime=True")
 
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
@@ -382,6 +383,110 @@ func handleDeleteUser(c *gin.Context) {
 	ResponseJSON(c, 200, 200, "delete user ok", nil)
 }
 
+// @Summary get city
+// @Tags City
+// @Produce application/json
+// @Param ID path string true "ID"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /city/{ID} [get]
+func handleGetCity(c *gin.Context) {
+
+	id := c.Param("ID")
+
+	if len(id) == 0 {
+		ResponseJSON(c, 200, 400, "invalid param", nil)
+		return
+	}
+
+	intId, _ := strconv.Atoi(id)
+
+	if intId < 0 {
+		ResponseJSON(c, 200, 500, "invalid param: number should be positive", nil)
+		return
+	}
+
+	city, _ := sr.db.City.
+		Query().
+		Where(city.ID(intId)).
+		First(context.Background())
+
+	if city == nil {
+		ResponseJSON(c, http.StatusOK, 500, "city doesn't exist", nil)
+		return
+	}
+	type ResponseData struct {
+		ID          uint64 `json:"ID"`
+		Name        string `json:"Name"`
+		CountryCode string `json:"CountryCode"`
+		District    string `json:"District"`
+		Population  uint64 `json:"Population"`
+	}
+
+	var resp ResponseData
+
+	resp.Population = uint64(city.Population)
+	resp.District = city.District
+	resp.CountryCode = city.CountryCode
+	resp.Name = city.Name
+	resp.ID = uint64(city.ID)
+	ResponseJSON(c, http.StatusOK, 200, "", resp)
+}
+
+// @Summary create city
+// @Tags City
+// @Produce application/json
+// @Param Name path string true "Name"
+// @Param CountryCode path string true "CountryCode"
+// @Param District path string true "District"
+// @Param Population path int true "Population"
+// @Success 200 {string} json "{"code":200,"data":{},"msg":"ok"}"
+// @Router /city/create [POST]
+func handleCreateCity(c *gin.Context) {
+	type PostParam struct {
+		Name        string `form:"Name" json:"Name"`
+		CountryCode string `form:"CountryCode" json:"CountryCode"`
+		District    string `form:"District" json:"District"`
+		Population  int    `form:"Population" json:"Population"`
+	}
+
+	var form PostParam
+
+	httpCode, errCode := BindAndValid(c, &form)
+	if errCode != 200 {
+		ResponseJSON(c, httpCode, errCode, "invalid param", nil)
+		return
+	}
+
+	city, err := sr.db.City.
+		Create().
+		SetName(form.Name).
+		SetCountryCode(form.CountryCode).
+		SetDistrict(form.District).
+		SetPopulation(form.Population).
+		Save(context.Background())
+
+	if err != nil {
+		ResponseJSON(c, http.StatusOK, 500, "create user failed:"+err.Error(), nil)
+		return
+	}
+
+	type ResponseData struct {
+		ID          uint64 `json:"ID"`
+		Name        string `json:"Name"`
+		CountryCode string `json:"CountryCode"`
+		District    string `json:"District"`
+		Population  uint64 `json:"Population"`
+	}
+
+	var resp ResponseData
+	resp.Population = uint64(city.Population)
+	resp.District = city.District
+	resp.CountryCode = city.CountryCode
+	resp.Name = city.Name
+	resp.ID = uint64(city.ID)
+
+	ResponseJSON(c, http.StatusOK, 200, "", resp)
+}
 func runHttpServer() {
 	r := gin.New()
 
@@ -406,6 +511,9 @@ func runHttpServer() {
 	r.POST("/user/update", handleUpdateUser)
 	// Delete
 	r.DELETE("/user/:id", handleDeleteUser)
+
+	r.GET("/city/:ID", handleGetCity)
+	r.POST("/city/create", handleCreateCity)
 
 	// Listen and serve on 0.0.0.0:8080
 	_ = r.Run(":8080")

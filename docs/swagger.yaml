@@ -64,6 +64,57 @@ paths:
       summary: Verify Captcha
       tags:
       - Captcha
+  /city/{ID}:
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: ID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: get city
+      tags:
+      - City
+  /city/create:
+    post:
+      parameters:
+      - description: Name
+        in: path
+        name: Name
+        required: true
+        type: string
+      - description: CountryCode
+        in: path
+        name: CountryCode
+        required: true
+        type: string
+      - description: District
+        in: path
+        name: District
+        required: true
+        type: string
+      - description: Population
+        in: path
+        name: Population
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: create city
+      tags:
+      - City
   /user/{id}:
     delete:
       parameters:

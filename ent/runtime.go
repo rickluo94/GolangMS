@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"awesomeProject/ent/city"
 	"awesomeProject/ent/schema"
 	"awesomeProject/ent/user"
 	"time"
@@ -14,6 +15,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	cityFields := schema.City{}.Fields()
+	_ = cityFields
+	// cityDescName is the schema descriptor for Name field.
+	cityDescName := cityFields[0].Descriptor()
+	// city.NameValidator is a validator for the "Name" field. It is called by the builders before save.
+	city.NameValidator = cityDescName.Validators[0].(func(string) error)
+	// cityDescCountryCode is the schema descriptor for CountryCode field.
+	cityDescCountryCode := cityFields[1].Descriptor()
+	// city.CountryCodeValidator is a validator for the "CountryCode" field. It is called by the builders before save.
+	city.CountryCodeValidator = cityDescCountryCode.Validators[0].(func(string) error)
+	// cityDescDistrict is the schema descriptor for District field.
+	cityDescDistrict := cityFields[2].Descriptor()
+	// city.DistrictValidator is a validator for the "District" field. It is called by the builders before save.
+	city.DistrictValidator = cityDescDistrict.Validators[0].(func(string) error)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUUID is the schema descriptor for uuid field.
